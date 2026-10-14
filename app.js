@@ -3,11 +3,11 @@ const KEY='logger_app_data',$=s=>document.querySelector(s);
 const TY=['L1','L2','HNR','FU','MO'];
 const ST={L1:['👀 L1','#E6E8EA','#4B5563','#333'],L2:['💬 L2','#82B1E6','#fff','#82B1E6'],HNR:['🔥 HNR','#528A61','#fff','#528A61'],FU:['📲 FU','#1F2937','#fff','#1F2937'],MO:['🏆 MO','#DB6256','#fff','#DB6256']};
 const DEF={pts:{L1:1,L2:2,HNR:5,FU:10,MO:-1},first:10,step:5};
-const PRE={HNR:'🟢',FU:'🟡',MO:'🔴'};
+const PRE={L1:'⚪',L2:'🔵',HNR:'🟢',FU:'🟡',MO:'🔴'};
 const TAGS=[['OO','OO'],['Weasel','Weasel'],['I-date','☕I-date'],['No#Close','No#Close'],['2-set','2️⃣2-set'],['Over came','💪🏻Over came'],['Name close','🏷️Name close'],['zero set','0️⃣zero set'],['Dude HNR','🕺🏻Dude HNR']];
 const EMO=['😀','😝','😡','🥳','💪🏻','💡'];
 const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const LINE=/^\[(\d{1,2}:\d{2} [ap]m)\]\s*(🟢|🟡|🔴)\s*(HNR|FU|MO)\s*#(\d+):/i;
+const LINE=/^\[(\d{1,2}:\d{2} [ap]m)\]\s*(🟢|🟡|🔴|⚪|🔵)\s*(L1|L2|HNR|FU|MO)\s*#(\d+):/i;
 const ld=d=>new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
 const hm=()=>new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
 const tm12=()=>new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
@@ -40,10 +40,10 @@ function ins(t){const e=$('#ed');if(!e)return;
  const s=getSelection(),n=s.anchorNode,p=n&&n.nodeType===3&&s.anchorOffset>0?n.data[s.anchorOffset-1]:'';
  document.execCommand('insertText',false,(p&&!/\s/.test(p)?' ':'')+t+' ');C().notes=rd();save()}
 // ---------- views ----------
-const tile=(k,n,cls)=>{const [l,bg,fg,bt]=ST[k],p=D.rules?rule(ym(C().date)).pts[k]:0;
- return `<div class="${cls}" style="background:${bg};color:${fg}"><i>${l}</i><b data-n="${k}">${n[k]}</b><small>${p>0?'+':''}${p} pt${Math.abs(p)==1?'':'s'}</small><p><button class=m data-a=sub data-v=${k} data-keep data-m="${k}" ${n[k]?'':'disabled'}>−</button><button data-a=add data-v=${k} data-keep style="color:${bt}">+</button></p></div>`};
+const tile=(k,n,cls)=>{const [l,bg,fg,bt]=ST[k],p=rule(ym(C().date)).pts[k];
+ return `<div class="${cls}" style="background:${bg};color:${fg}"><i>${l}<small>${p>0?'+':''}${p}</small></i><p><button class=m data-a=sub data-v=${k} data-keep data-m="${k}" ${n[k]?'':'disabled'}>−</button><b data-n="${k}">${n[k]}</b><button data-a=add data-v=${k} data-keep style="color:${bt}">+</button></p></div>`};
 const tiles=(n,lock)=>`<div class="tl ${lock?'lock':''}">${tile('L1',n,'a')}${tile('L2',n,'a')}${tile('HNR',n,'a')}${tile('FU',n,'b')}${tile('MO',n,'b')}</div>`;
-const hdr=()=>`<div class="r top"><b>⚛ DG LOG</b><span class=scr>Score <b id=sc>${pts(C().reps,ym(C().date))}</b></span></div>`;
+const hdr=()=>`<div class="r top"><b>⚛ Atomic Daygamer 2.0</b><span class=scr>Score <b id=sc>${pts(C().reps,ym(C().date))}</b></span></div>`;
 function logV(){const c=C(),n=cnt(c.reps),on=c.isStarted||c.reps.length;
  if(!on){const ok=c.place.trim()&&c.date&&c.startTime;
   return `<div class=pg>${hdr()}<div class=card><div class=meta><input type=date data-f=date value="${esc(c.date)}"><input type=time data-f=startTime value="${esc(c.startTime)}"></div>
@@ -52,7 +52,7 @@ function logV(){const c=C(),n=cnt(c.reps),on=c.isStarted||c.reps.length;
  return `<div class=lp>${hdr()}<div class=r style="margin-bottom:8px"><div class=meta style="margin:0"><span class=chip style="font-weight:600">${esc(c.place)}</span><span class=chip style="font-weight:600">${c.date.slice(8)}-${c.date.slice(5,7)} · ${esc(c.startTime)}</span></div><button data-a=reset style="border:0;background:none;color:#9ca3af;font-weight:600;font-size:12px">Reset</button></div>
 ${tiles(n)}<div id=ed class=ed contenteditable=true spellcheck=false data-ph="Quick notes..."></div>
 <div class=dock>${TAGS.map((t,i)=>`<button class=chip data-a=tag data-v=${i} data-keep>${t[0]}</button>`).join('')}${EMO.map(e=>`<button class="chip e" data-a=emo data-v="${e}" data-keep>${e}</button>`).join('')}</div>
-<button class="big sv" data-a=saveS>SAVE SESSION</button></div>`}
+<button class="big sv" data-a=saveS data-keep>SAVE SESSION</button></div>`}
 function mountLog(){const e=$('#ed');if(!e)return;e.innerHTML=html(C().notes);
  e.addEventListener('input',()=>{C().notes=rd();save()});
  e.addEventListener('keydown',k=>{if(k.key==='Enter'){k.preventDefault();document.execCommand('insertLineBreak')}});
@@ -109,10 +109,16 @@ document.addEventListener('input',e=>{const f=e.target.dataset.f;if(!f)return;
  if(f==='exS')exS=e.target.value;else if(f==='exE')exE=e.target.value;
  else{C()[f]=e.target.value;save();if(f==='place'){const ok=C().place.trim(),b=$('.big.st');if(b)b.classList.toggle('off',!ok);document.querySelectorAll('.chs .chip').forEach((c,i)=>c.classList.toggle('on',D.venues[i].toLowerCase()===ok.toLowerCase()))}}});
 // ---------- celebration ----------
+function cheer(){try{const a=new(window.AudioContext||window.webkitAudioContext)(),m=a.createGain();m.gain.value=.9;m.connect(a.destination);const T=a.currentTime;
+ [523,659,784,1047,1319].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain(),t=T+i*.1;o.type='sawtooth';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.13,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+.55);o.connect(g);g.connect(m);o.start(t);o.stop(t+.6)});
+ const nb=a.createBuffer(1,a.sampleRate*.05|0,a.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(a.sampleRate*.008));
+ for(let i=0;i<120;i++){const s=a.createBufferSource(),g=a.createGain(),f=a.createBiquadFilter();s.buffer=nb;s.playbackRate.value=.7+Math.random()*.8;g.gain.value=.2+Math.random()*.4;f.type='bandpass';f.frequency.value=1500+Math.random()*2500;s.connect(f);f.connect(g);g.connect(m);s.start(T+.25+Math.random()*2.6)}
+ for(let v=0;v<5;v++){const o=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain(),t=T+.12+v*.17,b=200+Math.random()*200;o.type='sawtooth';o.frequency.setValueAtTime(b,t);o.frequency.exponentialRampToValueAtTime(b*1.9,t+.55);f.type='bandpass';f.Q.value=4;f.frequency.setValueAtTime(700,t);f.frequency.linearRampToValueAtTime(1300,t+.5);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.1);g.gain.exponentialRampToValueAtTime(.0001,t+.95);o.connect(f);f.connect(g);g.connect(m);o.start(t);o.stop(t+1)}}catch(e){}}
+
 function celebrate(s){const M=ym(s.date),tot=dayTot(s.date),mk=markTxt(tot,M),o=document.createElement('div');o.id='cel';
  o.innerHTML=`<canvas></canvas><div class=card><div style="font-size:40px;line-height:1">🎉</div><div style="font-size:21px;font-weight:700;margin:8px 0 2px">Session saved</div><div style="font-size:50px;font-weight:800;color:#528a61;line-height:1.1">${pts(s.reps,M)>0?'+':''}${pts(s.reps,M)}</div><div style="color:#6b7280;margin-bottom:10px">points · today ${tot}</div>${mk?`<div style="display:inline-block;background:#FDECEA;color:#DB6256;border-radius:12px;padding:6px 16px;font-size:20px;font-weight:800">${mk}</div>`:''}<div style="color:#9ca3af;font-size:12px;margin-top:12px">tap to continue</div></div>`;
  document.body.appendChild(o);navigator.vibrate&&navigator.vibrate([30,40,30]);
- try{const a=new(window.AudioContext||window.webkitAudioContext)();[523,659,784,1047].forEach((f,i)=>{const n=a.createOscillator(),g=a.createGain();n.type='triangle';n.frequency.value=f;n.connect(g);g.connect(a.destination);const t=a.currentTime+i*.12;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.35,t+.02);g.gain.exponentialRampToValueAtTime(.0001,t+.5);n.start(t);n.stop(t+.55)})}catch(e){}
+ cheer();
  const cv=o.querySelector('canvas'),x=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
  const P=Array.from({length:110},()=>({x:Math.random()*cv.width,y:-Math.random()*cv.height*.6,w:6+Math.random()*5,h:10+Math.random()*8,v:2+Math.random()*4,r:Math.random()*6,s:(Math.random()-.5)*.2,c:['#82B1E6','#528A61','#DB6256','#F5C542'][Math.random()*4|0]}));
  const end=Date.now()+2800;(function f(){x.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.y+=p.v;p.r+=p.s;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});if(Date.now()<end&&document.body.contains(o))requestAnimationFrame(f)})();
