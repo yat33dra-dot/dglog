@@ -1,5 +1,5 @@
 'use strict';
-const KEY='logger_app_data',$=s=>document.querySelector(s);
+const VER='2.1',KEY='logger_app_data',$=s=>document.querySelector(s);
 const TY=['L1','L2','HNR','FU','MO'];
 const ST={L1:['👀 L1','#E6E8EA','#4B5563','#333'],L2:['💬 L2','#82B1E6','#fff','#82B1E6'],HNR:['🔥 HNR','#528A61','#fff','#528A61'],FU:['📲 FU','#1F2937','#fff','#1F2937'],MO:['🏆 MO','#DB6256','#fff','#DB6256']};
 const DEF={pts:{L1:1,L2:2,HNR:5,FU:10,MO:-1},first:10,step:5};
@@ -17,7 +17,7 @@ function load(){let d;try{d=JSON.parse(localStorage.getItem(KEY))}catch(e){}
  d=d&&typeof d==='object'?d:{};d.sessions=Array.isArray(d.sessions)?d.sessions:[];d.rules=d.rules||{};
  d.venues=Array.isArray(d.venues)?d.venues:['FC','Px Vn','Mg Road','Camp','Viman Nagar'];
  d.currentSession={...blank(),...(d.currentSession||{})};return d}
-let D=load(),view='log',mon=new Date(),scoM=ym(ld(new Date()));mon=new Date(mon.getFullYear(),mon.getMonth(),1);
+let D=load(),view='log',daySel=null,ED=null,PAY=null,CHEER_URL=null,mon=new Date(),scoM=ym(ld(new Date()));mon=new Date(mon.getFullYear(),mon.getMonth(),1);
 let exS=ld(mon),exE=ld(new Date(mon.getFullYear(),mon.getMonth()+1,0));
 function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('⚠️ Could not save: storage full or blocked')}}
 const C=()=>D.currentSession;
@@ -43,7 +43,7 @@ function ins(t){const e=$('#ed');if(!e)return;
 const tile=(k,n,cls)=>{const [l,bg,fg,bt]=ST[k],p=rule(ym(C().date)).pts[k];
  return `<div class="${cls}" style="background:${bg};color:${fg}"><i>${l}<small>${p>0?'+':''}${p}</small></i><p><button class=m data-a=sub data-v=${k} data-keep data-m="${k}" ${n[k]?'':'disabled'}>−</button><b data-n="${k}">${n[k]}</b><button data-a=add data-v=${k} data-keep style="color:${bt}">+</button></p></div>`};
 const tiles=(n,lock)=>`<div class="tl ${lock?'lock':''}">${tile('L1',n,'a')}${tile('L2',n,'a')}${tile('HNR',n,'a')}${tile('FU',n,'b')}${tile('MO',n,'b')}</div>`;
-const hdr=()=>`<div class="r top"><b>⚛ Atomic Daygamer 2.0</b><span class=scr>Score <b id=sc>${pts(C().reps,ym(C().date))}</b></span></div>`;
+const hdr=()=>`<div class="r top"><b>⚛ Atomic Daygamer 2.0 <small style="font-weight:500;color:#9ca3af;font-size:10px">v${VER}</small></b><span class=scr>Score <b id=sc>${pts(C().reps,ym(C().date))}</b></span></div>`;
 function logV(){const c=C(),n=cnt(c.reps),on=c.isStarted||c.reps.length;
  if(!on){const ok=c.place.trim()&&c.date&&c.startTime;
   return `<div class=pg>${hdr()}<div class=card><div class=meta><input type=date data-f=date value="${esc(c.date)}"><input type=time data-f=startTime value="${esc(c.startTime)}"></div>
@@ -62,13 +62,14 @@ function updTiles(){const n=cnt(C().reps);TY.forEach(k=>{const b=document.queryS
 function statsV(){const y=mon.getFullYear(),m=mon.getMonth(),M=ym(ld(mon)),dim=new Date(y,m+1,0).getDate(),lead=(mon.getDay()+6)%7,today=ld(new Date());
  let c='';for(let i=0;i<lead;i++)c+='<div class=d></div>';
  for(let i=1;i<=dim;i++){const d=ld(new Date(y,m,i)),s=dayTot(d),k=dots(s,M),has=D.sessions.some(x=>x.date===d);
-  c+=`<div class="d ${d===today?'now':''}">${i}<div class=x>${k>-1?`<u>X</u>${k?`<s>${'<i></i>'.repeat(k)}</s>`:''}`:''}${has?`<em>${s}</em>`:''}</div></div>`}
+  c+=`<div class="d ${d===today?'now':''}" data-a=day data-v=${d}>${i}<div class=x>${k>-1?`<u>X</u>${k?`<s>${'<i></i>'.repeat(k)}</s>`:''}`:''}${has?`<em>${s}</em>`:''}</div></div>`}
  for(let i=0;i<(7-(lead+dim)%7)%7;i++)c+='<div class=d></div>';
  return `<div class=pg><div class=r style="margin-bottom:16px"><h1>Calendar</h1><div class=mh><button data-a=mo data-v=-1>‹</button><span>${mon.toLocaleDateString('en-US',{month:'long',year:'numeric'})}</span><button data-a=mo data-v=1>›</button></div></div>
 <div class=cal><div class="g7 dow">${[...'MTWTFSS'].map(d=>`<div>${d}</div>`).join('')}</div><div class="g7 days">${c}</div></div>
+<p style="text-align:center;color:#9ca3af;font-size:12px;margin:-6px 0 12px">Tap a day to view or edit its logs</p>
 <div class=card style="padding:16px;border-radius:24px"><h2 style="font-size:15px">Export &amp; Backup</h2>
 <div class=er><div>START DATE<input type=date data-f=exS value="${exS}"></div><div>END DATE<input type=date data-f=exE value="${exE}"></div></div>
-<div class=eb><button class=a data-a=csv>CSV backup</button><button class=c data-a=ai>JSON for AI</button><button class=k data-a=png>Calendar PNG</button><label>Import<input type=file accept=".json,.txt,.csv" hidden onchange="imp(this)"></label><button class=w data-a=wipe>Delete All Logs</button></div></div></div>`}
+<div class=eb><button class=a data-a=csv>CSV backup</button><button class=c data-a=ai>JSON for AI</button><button class=k data-a=png>Calendar PNG</button><label>Import<input type=file accept=".json,.txt,.csv" hidden onchange="imp(this)"></label><button class=w data-a=wipe>Delete All Logs</button></div></div></div>${daySel?daySheet():''}${paySheet()}`}
 function scoV(){const m=scoM,r=rule(m),lock=m<ym(ld(new Date())),[y,mo]=m.split('-'),
  st=(p,v)=>`<div class=stp><button data-a=sp data-v="${p}:-1">−</button><b>${v}</b><button data-a=sp data-v="${p}:1">+</button></div>`;
  return `<div class=pg><div class=r style="margin-bottom:16px"><h1>Scoring</h1><div class=mh><button data-a=sm data-v=-1>‹</button><span>${MN[mo-1]} ${y}</span><button data-a=sm data-v=1>›</button></div></div>
@@ -76,8 +77,8 @@ function scoV(){const m=scoM,r=rule(m),lock=m<ym(ld(new Date())),[y,mo]=m.split(
 <div class=card style="${lock?'opacity:.6':''}"><h2>Marking</h2><div class="row2 f"><span>First X at</span>${st('first',r.first)}</div><div class=row2><span>Step</span>${st('step',r.step)}</div>
 <div class=mk>${[0,1,2,3].map(i=>`<div><u>X</u><s>${'<i></i>'.repeat(i)}</s>${r.first+r.step*i}</div>`).join('')}</div></div>
 <div class=r style="font-size:12px;color:#6b7280;padding:0 4px"><span>${lock?'Past month: locked':'Applies to '+MN[mo-1]+' only'}</span>${lock?'':'<button data-a=rst style="border:0;background:#e6e8ea;color:#4b5563;border-radius:10px;padding:9px 12px;font-weight:600">Reset to defaults</button>'}</div></div>`}
-function render(){const v=$('#v');v.innerHTML=view==='log'?logV():view==='stats'?statsV():scoV();if(view==='log')mountLog();
- document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===view))}
+function render(){const v=$('#v');v.innerHTML=view==='log'?logV():view==='stats'?statsV():view==='edit'?editV():scoV();if(view==='log')mountLog();
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===(view==='edit'?'stats':view)))}
 // ---------- actions ----------
 const A={
  go(v){view=v;render();scrollTo(0,0)},
@@ -94,7 +95,18 @@ const A={
  tag(i){ins(TAGS[i][1])},emo(e){ins(e)},
  reset(){if(confirm('Clear current session?')){D.currentSession=blank();save();render()}},
  saveS(){const c=C();c.notes=rd();if(!c.reps.length&&!c.notes.trim())return toast('Nothing to save');
-  const s={...c,id:Date.now()};D.sessions.unshift(s);D.currentSession=blank();save();celebrate(s)},
+  const s={...c,id:Date.now()};D.sessions.unshift(s);D.currentSession=blank();save();const q=s.date.split('-');mon=new Date(+q[0],+q[1]-1,1);view='stats';daySel=null;render();scrollTo(0,0);celebrate(s)},
+day(d){daySel=d;render()},cls(){daySel=null;render()},
+ edit(id){const x=D.sessions.find(z=>String(z.id)===String(id));if(!x)return;ED=JSON.parse(JSON.stringify(x));ED.od=x.date;daySel=null;view='edit';render();scrollTo(0,0)},
+ newS(d){ED={id:Date.now(),isStarted:false,date:d,startTime:'12:00',place:'',notes:'',reps:[],isNew:1,od:d};daySel=null;view='edit';render();scrollTo(0,0)},
+ del(id){if(confirm('Delete this session?')){D.sessions=D.sessions.filter(z=>String(z.id)!==String(id));save();render();toast('Session deleted')}},
+ ec(v){const [t,d]=v.split(':');if(+d>0)ED.reps.push({time:'',type:t,notes:''});else{const i=ED.reps.map(r=>r.type).lastIndexOf(t);if(i>-1)ED.reps.splice(i,1)}render()},
+ esave(){const e=ED;if(!e.date)return toast('Pick a date');const p=(e.place||'').trim().replace(/\s+/g,' '),f=D.venues.find(v=>v.toLowerCase()===p.toLowerCase());e.place=f||p;if(p&&!f)D.venues.push(p);
+  const isNew=e.isNew;delete e.isNew;delete e.od;if(isNew)D.sessions.unshift(e);else D.sessions=D.sessions.map(z=>String(z.id)===String(e.id)?e:z);D.sessions.sort((a,b)=>b.date.localeCompare(a.date));save();
+  const q=e.date.split('-');mon=new Date(+q[0],+q[1]-1,1);daySel=e.date;ED=null;view='stats';render();toast('Saved')},
+ ecancel(){daySel=ED&&ED.od||null;ED=null;view='stats';render()},
+ pcls(){PAY=null;render()},pshare(){shareP()},pdl(){dlP()},
+ pcopy(){navigator.clipboard.writeText(PAY.text).then(()=>{PAY=null;render();toast('Copied. Paste it into a chat.')}).catch(()=>toast('Copy blocked, use Save instead'))},
  mo(n){mon=new Date(mon.getFullYear(),mon.getMonth()+n,1);render()},
  sm(n){const [y,m]=scoM.split('-').map(Number),d=new Date(y,m-1+ +n,1);scoM=ld(d).slice(0,7);render()},
  sp(v){if(scoM<ym(ld(new Date())))return toast('Past months are locked');const [p,d]=v.split(':'),b=rule(scoM),r={pts:{...b.pts},first:b.first,step:b.step};
@@ -105,10 +117,27 @@ const A={
 };
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(b&&A[b.dataset.a])A[b.dataset.a](b.dataset.v)});
 document.addEventListener('mousedown',e=>{if(e.target.closest('[data-keep]'))e.preventDefault()});
-document.addEventListener('input',e=>{const f=e.target.dataset.f;if(!f)return;
+document.addEventListener('input',e=>{if(e.target.dataset.e){ED[e.target.dataset.e]=e.target.value;return}const f=e.target.dataset.f;if(!f)return;
  if(f==='exS')exS=e.target.value;else if(f==='exE')exE=e.target.value;
  else{C()[f]=e.target.value;save();if(f==='place'){const ok=C().place.trim(),b=$('.big.st');if(b)b.classList.toggle('off',!ok);document.querySelectorAll('.chs .chip').forEach((c,i)=>c.classList.toggle('on',D.venues[i].toLowerCase()===ok.toLowerCase()))}}});
+
+function daySheet(){const d=daySel,ss=D.sessions.filter(x=>x.date===d),M=ym(d),tot=dayTot(d);
+ return `<div class=bk data-a=cls></div><div class=sh><div class=r style="margin-bottom:10px"><b style="font-size:16px">${new Date(d+'T12:00').toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'short'})}</b><span style="color:#6b7280">${tot} pts ${markTxt(tot,M)}</span></div>
+${ss.length?ss.map(x=>{const n=cnt(x.reps);return `<div class=ssn><div class=r><b>${esc(x.place)||'No place'} · ${esc(x.startTime)}</b><span>${pts(x.reps,M)} pts</span></div><div class=cn>${TY.map(k=>k+' '+n[k]).join(' · ')}</div>${x.notes?`<div class=pv>${esc(x.notes.slice(0,140))}</div>`:''}<div class=er2><button data-a=edit data-v=${x.id}>Edit</button><button class=dl data-a=del data-v=${x.id}>Delete</button></div></div>`}).join(''):'<p style="color:#9ca3af;margin:6px 0 12px">No sessions this day.</p>'}
+<button class=ad data-a=newS data-v=${d}>+ Add session</button></div>`}
+function editV(){const e=ED,n=cnt(e.reps);
+ return `<div class=pg><h1 style="margin-bottom:14px">${e.isNew?'Add session':'Edit session'}</h1><div class=card><div class=meta><input type=date data-e=date value="${esc(e.date)}"><input type=time data-e=startTime value="${esc(e.startTime)}"></div>
+<input class=pl data-e=place list=vl placeholder=Place value="${esc(e.place)}" autocomplete=off style="margin-bottom:0"><datalist id=vl>${D.venues.map(v=>`<option value="${esc(v)}">`).join('')}</datalist></div>
+<div class=card><div class=r style="margin-bottom:4px"><h2 style="margin:0">Counts</h2><span class=scr>Score <b>${pts(e.reps,ym(e.date))}</b></span></div>${TY.map((k,i)=>`<div class="row2 ${i?'':'f'}"><span class=pc style="background:${ST[k][1]};color:${ST[k][2]}">${k}</span><div class=stp><button data-a=ec data-v="${k}:-1">−</button><b>${n[k]}</b><button data-a=ec data-v="${k}:1">+</button></div></div>`).join('')}</div>
+<div class=card><h2>Notes</h2><textarea class=pl data-e=notes rows=9 style="font-size:15px;line-height:1.5;margin:0">${esc(e.notes)}</textarea></div>
+<button class="big sv" data-a=esave>SAVE CHANGES</button><button class=ob style="margin-top:8px;color:#4b5563" data-a=ecancel>Cancel</button></div>`}
+function paySheet(){return PAY?`<div class=bk data-a=pcls></div><div class=sh><b style="font-size:15px;word-break:break-all">${esc(PAY.name)}</b><p style="color:#6b7280;margin:4px 0 12px;font-size:12px">Choose where to send it</p><button class=ob data-a=pshare>Share or save to Drive</button><button class=ob data-a=pdl>Save to this device</button>${PAY.text?'<button class=ob data-a=pcopy>Copy to clipboard</button>':''}<button class=ob style="color:#9ca3af" data-a=pcls>Cancel</button></div>`:''}
+function dlP(){const p=PAY,a=document.createElement('a');a.href=URL.createObjectURL(p.data instanceof Blob?p.data:new Blob([p.data],{type:p.mime}));a.download=p.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2e3);PAY=null;render();toast('Saved to this device (Downloads)')}
+function shareP(){const p=PAY,t=[[p.name,p.mime]];if(p.alt)t.push([p.alt,'text/plain']);
+ for(const [n,m] of t){const f=new File([p.data],n,{type:m});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:n}).then(()=>{PAY=null;render()}).catch(e=>{if(e.name!=='AbortError')dlP()});return}}
+ dlP()}
 // ---------- celebration ----------
+function playCheer(){if(CHEER_URL){try{new Audio(CHEER_URL).play().catch(cheer);return}catch(e){}}cheer()}
 function cheer(){try{const a=new(window.AudioContext||window.webkitAudioContext)(),m=a.createGain();m.gain.value=.9;m.connect(a.destination);const T=a.currentTime;
  [523,659,784,1047,1319].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain(),t=T+i*.1;o.type='sawtooth';o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.13,t+.03);g.gain.exponentialRampToValueAtTime(.0001,t+.55);o.connect(g);g.connect(m);o.start(t);o.stop(t+.6)});
  const nb=a.createBuffer(1,a.sampleRate*.05|0,a.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.exp(-i/(a.sampleRate*.008));
@@ -116,13 +145,13 @@ function cheer(){try{const a=new(window.AudioContext||window.webkitAudioContext)
  for(let v=0;v<5;v++){const o=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain(),t=T+.12+v*.17,b=200+Math.random()*200;o.type='sawtooth';o.frequency.setValueAtTime(b,t);o.frequency.exponentialRampToValueAtTime(b*1.9,t+.55);f.type='bandpass';f.Q.value=4;f.frequency.setValueAtTime(700,t);f.frequency.linearRampToValueAtTime(1300,t+.5);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.1);g.gain.exponentialRampToValueAtTime(.0001,t+.95);o.connect(f);f.connect(g);g.connect(m);o.start(t);o.stop(t+1)}}catch(e){}}
 
 function celebrate(s){const M=ym(s.date),tot=dayTot(s.date),mk=markTxt(tot,M),o=document.createElement('div');o.id='cel';
- o.innerHTML=`<canvas></canvas><div class=card><div style="font-size:40px;line-height:1">🎉</div><div style="font-size:21px;font-weight:700;margin:8px 0 2px">Session saved</div><div style="font-size:50px;font-weight:800;color:#528a61;line-height:1.1">${pts(s.reps,M)>0?'+':''}${pts(s.reps,M)}</div><div style="color:#6b7280;margin-bottom:10px">points · today ${tot}</div>${mk?`<div style="display:inline-block;background:#FDECEA;color:#DB6256;border-radius:12px;padding:6px 16px;font-size:20px;font-weight:800">${mk}</div>`:''}<div style="color:#9ca3af;font-size:12px;margin-top:12px">tap to continue</div></div>`;
+ o.innerHTML=`<canvas></canvas><div class=card><div style="font-size:40px;line-height:1">🎉</div><div style="font-size:21px;font-weight:700;margin:8px 0 2px">Session saved</div><div style="font-size:50px;font-weight:800;color:#528a61;line-height:1.1">${pts(s.reps,M)>0?'+':''}${pts(s.reps,M)}</div><div style="color:#6b7280;margin-bottom:10px">points · today ${tot}</div>${mk?`<div style="display:inline-block;background:#FDECEA;color:#DB6256;border-radius:12px;padding:6px 16px;font-size:20px;font-weight:800">${mk}</div>`:''}<div style="color:#9ca3af;font-size:12px;margin-top:12px">tap to close</div></div>`;
  document.body.appendChild(o);navigator.vibrate&&navigator.vibrate([30,40,30]);
- cheer();
+ playCheer();
  const cv=o.querySelector('canvas'),x=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
  const P=Array.from({length:110},()=>({x:Math.random()*cv.width,y:-Math.random()*cv.height*.6,w:6+Math.random()*5,h:10+Math.random()*8,v:2+Math.random()*4,r:Math.random()*6,s:(Math.random()-.5)*.2,c:['#82B1E6','#528A61','#DB6256','#F5C542'][Math.random()*4|0]}));
  const end=Date.now()+2800;(function f(){x.clearRect(0,0,cv.width,cv.height);P.forEach(p=>{p.y+=p.v;p.r+=p.s;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.h/2,p.w,p.h);x.restore()});if(Date.now()<end&&document.body.contains(o))requestAnimationFrame(f)})();
- o.onclick=()=>{o.remove();const p=s.date.split('-');mon=new Date(+p[0],+p[1]-1,1);view='stats';render();scrollTo(0,0)}}
+ const done=()=>o.remove();o.onclick=done;setTimeout(done,3600)}
 // ---------- export ----------
 const q=s=>`"${String(s||'').replace(/"/g,'""')}"`;
 const dmy=d=>d.split('-').reverse().join('-');
@@ -134,7 +163,7 @@ function out(name,data,mime,alt){const dl=()=>{const a=document.createElement('a
 function exp(t){const ss=inR();if(!ss.length)return toast('No sessions in that date range');
  if(t==='csv'){let o='Date,Day,Start,Place,L1,L2,HNR,FU,MO,Session Score,Day Total,Day Mark,Notes\n';
   ss.forEach(s=>{const n=cnt(s.reps),M=ym(s.date),tot=dayTot(s.date);o+=[dmy(s.date),new Date(s.date+'T12:00').toLocaleDateString('en-US',{weekday:'short'}),s.startTime,q(s.place),n.L1,n.L2,n.HNR,n.FU,n.MO,pts(s.reps,M),tot,markTxt(tot,M),q((s.notes||'').replace(/\r?\n+/g,' | '))].join(',')+'\n'});
-  return out(base()+'.csv','\ufeff'+o,'text/csv')}
+  PAY={name:base()+'.csv',data:'\ufeff'+o,mime:'text/csv',text:o};return render()}
  const days={},keys={},tg={};let tp=0;const all=[];
  ss.forEach(s=>{(days[s.date]=days[s.date]||[]).push(s);keys[ym(s.date)]=rule(ym(s.date));all.push(...s.reps)});
  const tagOf=t=>{const r=[];TAGS.forEach(x=>{if(t.includes(x[1]))r.push(x[0])});EMO.forEach(e=>{if(t.includes(e))r.push(e)});return r};
@@ -146,7 +175,7 @@ function exp(t){const ss=inR();if(!ss.length)return toast('No sessions in that d
   legend:{types:{L1:'Directional / functional open',L2:'Social opens / interactions / Dude HNR',HNR:'Direct open / compliment',FU:'Number ask / instadate',MO:'Missed opportunity (fear, not logistics)'},tags:{OO:'Opinion opener',Weasel:'Creative but weak excuse (reason)','I-date':'Instadate','No#Close':'Number close'},marks:'X = first threshold, X0/X00/X000 = each further step'},
   scoring_key_used:Object.fromEntries(Object.entries(keys).map(([m,r])=>[m,{points_per_tap:r.pts,first_X_at:r.first,step:r.step}])),
   range:{from:exS,to:exE},month_totals:{days_logged:dl.length,sessions:ss.length,total_points:tp,avg_points_per_logged_day:+(tp/dl.length).toFixed(1),counts:cnt(all),tag_mentions:tg},days:dl};
- out(base()+'.json',JSON.stringify(J,null,2),'application/json',base()+'.txt')}
+ const js=JSON.stringify(J,null,2);PAY={name:base()+'.json',data:js,mime:'application/json',alt:base()+'.txt',text:js};render()}
 function drawPng(){const y=mon.getFullYear(),m=mon.getMonth(),M=ym(ld(mon)),dim=new Date(y,m+1,0).getDate(),lead=(mon.getDay()+6)%7,rows=Math.ceil((lead+dim)/7),W=1080,cw=W/7,ch=150,H=130+rows*ch+30,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
  x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle='#111';x.font='bold 54px system-ui,sans-serif';x.fillText(mon.toLocaleDateString('en-US',{month:'long',year:'numeric'}),30,70);
  x.font='bold 24px system-ui,sans-serif';x.fillStyle='#9ca3af';x.textAlign='center';'MTWTFSS'.split('').forEach((l,i)=>x.fillText(l,cw*i+cw/2,118));
@@ -155,7 +184,7 @@ function drawPng(){const y=mon.getFullYear(),m=mon.getMonth(),M=ym(ld(mon)),dim=
   x.textAlign='left';x.fillStyle='#374151';x.font='26px system-ui,sans-serif';x.fillText(d,cx+12,cy+34);x.textAlign='center';
   if(k>-1){x.fillStyle='#DB6256';x.font='bold 56px system-ui,sans-serif';x.fillText('X',cx+cw/2,cy+96);x.fillStyle='#111';for(let j=0;j<k;j++){x.beginPath();x.arc(cx+cw/2+(j-(k-1)/2)*20,cy+112,6,0,7);x.fill()}}
   if(has){x.fillStyle='#9ca3af';x.font='20px system-ui,sans-serif';x.fillText(s,cx+cw/2,cy+ch-8)}}
- const f=`DG LOG_01-${MN[m]}_to_${dim}-${MN[m]}-${y}.png`;c.toBlob(b=>out(f,b,'image/png'))}
+ const f=`DG LOG_01-${MN[m]}_to_${dim}-${MN[m]}-${y}.png`;c.toBlob(b=>{PAY={name:f,data:b,mime:'image/png'};render()})}
 // ---------- import ----------
 function rows(t){const R=[];let r=[],f='',iq=0;for(let i=0;i<t.length;i++){const c=t[i];
  if(iq){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else iq=0}else f+=c}else if(c==='"')iq=1;else if(c===','){r.push(f);f=''}
@@ -172,4 +201,5 @@ function imp(el){const file=el.files[0];if(!file)return;const rd=new FileReader(
   const key=s=>[s.date,s.startTime,s.place,s.notes].join('|'),have=new Set(D.sessions.map(key)),fresh=add.filter(s=>s&&s.date&&Array.isArray(s.reps)&&!have.has(key(s)));
   D.sessions=[...fresh,...D.sessions].sort((a,b)=>b.date.localeCompare(a.date));save();render();toast(`Imported ${fresh.length} sessions`)}catch(e){alert(e.message||'Import failed')}el.value=''};rd.readAsText(file)}
 render();
+fetch('cheer.mp3').then(r=>r.ok?r.blob():null).then(b=>{if(b&&b.size>1000)CHEER_URL=URL.createObjectURL(b)}).catch(()=>{});
 if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
