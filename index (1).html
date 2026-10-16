@@ -30,6 +30,12 @@ h1{font-size:22px;margin:0}h2{font-size:14px;margin:0 0 8px}
 .tl button{width:26px;height:25px;border:0;border-radius:8px;background:#fff;color:#333;font-size:15px;font-weight:700;padding:0}
 .tl button.m{background:#ffffff40;color:inherit}.tl button:disabled{opacity:.4}.tl button:active{transform:scale(.92)}
 .tl>div{padding:6px 7px 7px}.tl i small{display:inline;font-size:9px;margin:0 0 0 4px;opacity:.8;font-weight:500}.tl p{justify-content:space-between;align-items:center}.tl p b{font-size:22px;display:block;line-height:1}.tl button{width:32px;height:30px}
+.d{cursor:pointer}.bk{position:fixed;inset:0;background:#0006;z-index:40}
+.sh{position:fixed;left:0;right:0;bottom:0;max-width:440px;margin:0 auto;background:#fff;border-radius:22px 22px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));z-index:41;max-height:78vh;overflow:auto}
+.ssn{background:#f9fafb;border-radius:14px;padding:10px;margin-bottom:8px}.ssn .cn{font-size:12px;color:#4b5563;margin:4px 0}.ssn .pv{font-size:12px;color:#6b7280;white-space:pre-wrap;max-height:3.3em;overflow:hidden}
+.er2{display:flex;gap:8px;margin-top:8px}.er2 button{flex:1;border:0;border-radius:10px;padding:9px;background:#e5e7eb;font-weight:600;font-size:13px}.er2 .dl{background:#fde8e6;color:#db6256}
+.ob{display:block;width:100%;border:0;border-radius:12px;padding:13px;margin-bottom:8px;background:#f3f4f6;font-weight:600;font-size:14px}
+.ad{display:block;width:100%;border:1px dashed #9ca3af;background:none;border-radius:12px;padding:11px;font-weight:600;color:#4b5563}
 .lock{opacity:.4;pointer-events:none}
 .lp{display:flex;flex-direction:column;height:calc(100dvh - 64px - env(safe-area-inset-bottom));padding:12px 12px 6px}
 body.typing .lp{height:100dvh}body.typing nav{display:none}
@@ -63,6 +69,7 @@ nav button span{font-size:19px}nav button.on{color:#528a61}
 </style></head>
 <body>
 <div id="v"></div><div id="toast"></div>
-<nav><button data-a="go" data-v="log"><span>📋</span>LOG</button><button data-a="go" data-v="stats"><span>📊</span>STATS</button><button data-a="go" data-v="sco"><span>⚙️</span>SCORING</button></nav>
+<nav><button data-a="go" data-v="log"><span>📋</span>LOG</button><button data-a="go" data-v="stats"><span>📊</span>STATS</button><button data-a="go" data-v="q"><span>🎯</span>QUESTS</button><button data-a="go" data-v="sco"><span>⚙️</span>SCORING</button></nav>
 <script src="app.js"></script>
+<script src="quests.js"></script>
 </body></html>
