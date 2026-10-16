@@ -1,5 +1,5 @@
 'use strict';
-const VER='3.0',KEY='logger_app_data',$=s=>document.querySelector(s);
+const VER='3.1',KEY='logger_app_data',$=s=>document.querySelector(s);
 const TY=['L1','L2','HNR','FU','MO'];
 const ST={L1:['👀 L1','#E6E8EA','#4B5563','#333'],L2:['💬 L2','#82B1E6','#fff','#82B1E6'],HNR:['🔥 HNR','#528A61','#fff','#528A61'],FU:['📲 FU','#1F2937','#fff','#1F2937'],MO:['🏆 MO','#DB6256','#fff','#DB6256']};
 const DEF={pts:{L1:1,L2:2,HNR:5,FU:10,MO:-1},first:10,step:5};
@@ -205,4 +205,9 @@ function imp(el){const file=el.files[0];if(!file)return;const rd=new FileReader(
   D.sessions=[...fresh,...D.sessions].sort((a,b)=>b.date.localeCompare(a.date));save();render();toast(`Imported ${fresh.length} sessions`)}catch(e){alert(e.message||'Import failed')}el.value=''};rd.readAsText(file)}
 render();
 fetch('cheer.mp3').then(r=>r.ok?r.blob():null).then(b=>{if(b&&b.size>1000)CHEER_URL=URL.createObjectURL(b)}).catch(()=>{});
+(function(){const nav=document.querySelector('nav');if(!nav)return;
+ const add=()=>{if(!nav.querySelector('[data-v=q]')){const b=document.createElement('button');b.dataset.a='go';b.dataset.v='q';b.innerHTML='<span>🎯</span>QUESTS';nav.insertBefore(b,nav.querySelector('[data-v=sco]'))}};
+ if(window.qHtml){add();return}
+ const t=document.querySelector('script[src="quests.js"]');if(t){t.addEventListener('load',add);return}
+ const n=document.createElement('script');n.src='quests.js';n.onload=add;n.onerror=()=>toast('quests.js is missing from your repository');document.body.appendChild(n)})();
 if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
